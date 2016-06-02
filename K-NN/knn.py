@@ -1,4 +1,4 @@
-# coding = UTF-8
+# coding = GBK
 '''
 Created on 2016年6月1日
 
@@ -59,14 +59,53 @@ def classify(inX,dataset,labels,k):
     #排序
     sortedClassCount=sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)
     return sortedClassCount[0][0]
-    
+
+'''
+读取文件转换成矩阵
+'''    
+def txt2data(filename):
+    fr = open(filename)
+    arrayLines = fr.readlines()
+    numOfLines = len(arrayLines)
+    classLabelVector = []
+    returnMat = zeros((numOfLines,3))
+    index = 0
+    for line in arrayLines:
+        line = line.strip()
+        listFromLine = line.split(' ')
+        returnMat[index,0] = listFromLine[0]
+        returnMat[index,1] = listFromLine[1]
+        returnMat[index,2] = int(listFromLine[-1])
+        classLabelVector.append(int(listFromLine[-1]))
+        index += 1
+    return returnMat , classLabelVector
+'''
+读取类别
+'''
+def txt2cata(filename):
+    fr = open(filename)
+    arrayLines = fr.readlines()
+    numOfLines = len(arrayLines)
+    labels = []
+    index = 0
+    for line in arrayLines:
+        line = line.strip()
+        labels.append(int(line))
+        index += 1
+    return labels
 '''
 主程序区域
+'''
 '''
 group,lable = createDataSet()
 print(len(group)) #len() and *.shape[0] , shape[0] is a easy way to measure matrix
 plotData(group, lable)
 print(group.sum(axis=1))
+'''
+
+returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
+print(returnmat)
+
 
 
 
