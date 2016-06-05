@@ -21,8 +21,53 @@ class point:
 '''
 def createDataSet():
     group = array([[1.0,1.1],[1.0,1.0],[0,0],[0,0.1]])
-    lable = ['A','A','B','B']
-    return group,lable
+    label = ['A','A','B','B']
+    return group,label
+'''
+数据分集
+输入原始数据集和其对应的标示
+返回训练集、建立集、测试集
+以及其相对应的标示
+'''
+def builtSet(group,labels):
+    num = len(group)
+    trainSet = [] #train set 60%
+    trainSetLabel = []
+    validationSet = [] #cross validation set 20%
+    validationSetLabel = []
+    testSet = [] #test set 20%
+    testSetLabel = []
+    for i in range(num):
+        if i < int(num * 0.6):
+            trainSet.append(group[i,:])
+            trainSetLabel.append(labels[i])
+        if i > int(num * 0.6) & i < int(num * 0.8) :
+            validationSet.append(group[i,:])
+            validationSetLabel.append(labels[i])
+        else :
+            testSet.append(group[i,:])
+            testSetLabel.append(labels[i])
+    return trainSet, trainSetLabel, validationSet,validationSetLabel , testSet , testSetLabel
+#无建立集的数据集生成
+def builtSet(group,labels):
+    num = len(group)
+    trainSet = [] #train set 60%
+    trainSetLabel = []
+    validationSet = [] #cross validation set 20%
+    validationSetLabel = []
+    testSet = [] #test set 20%
+    testSetLabel = []
+    for i in range(num):
+        if i < int(num * 0.7):
+            trainSet.append(group[i,:])
+            trainSetLabel.append(labels[i])
+        else :
+            testSet.append(group[i,:])
+            testSetLabel.append(labels[i])
+    return trainSet, trainSetLabel, testSet , testSetLabel
+            
+        
+    
 
 '''
 点状图展示
@@ -51,7 +96,7 @@ def createDataSet():
 这段代码太丑了
 '''
 
-def plotData(group,lable,labelbase):
+def plotData(group,label,labelbase):
     plt.figure(figsize=(16, 9), dpi=180)
     axes = plt.subplot(111)
 
@@ -81,37 +126,37 @@ def plotData(group,lable,labelbase):
     print(len(group))
     for i in range(len(group)):
         
-        if lable[i] == labelbase[0]: #1 type
+        if label[i] == labelbase[0]: #1 type
             type1_x.append(group[i][0])
             type1_y.append(group[i][1])
-        if lable[i] == labelbase[1]: #2 type
+        if label[i] == labelbase[1]: #2 type
             type2_x.append(group[i][0])
             type2_y.append(group[i][1])
-        if lable[i] == labelbase[2]: #3 type
+        if label[i] == labelbase[2]: #3 type
             type3_x.append(group[i][0])
             type3_y.append(group[i][1])
-        if lable[i] == labelbase[3]: #4 type
+        if label[i] == labelbase[3]: #4 type
             type4_x.append(group[i][0])
             type4_y.append(group[i][1])
-        if lable[i] == labelbase[4]: #5 type
+        if label[i] == labelbase[4]: #5 type
             type5_x.append(group[i][0])
             type5_y.append(group[i][1])
-        if lable[i] == labelbase[5]: #6 type
+        if label[i] == labelbase[5]: #6 type
             type6_x.append(group[i][0])
             type6_y.append(group[i][1])
-        if lable[i] == labelbase[6]: #7 type
+        if label[i] == labelbase[6]: #7 type
             type7_x.append(group[i][0])
             type7_y.append(group[i][1])
-        if lable[i] == labelbase[7]: #8 type
+        if label[i] == labelbase[7]: #8 type
             type8_x.append(group[i][0])
             type8_y.append(group[i][1])
-        if lable[i] == labelbase[8]: #9 type
+        if label[i] == labelbase[8]: #9 type
             type9_x.append(group[i][0])
             type9_y.append(group[i][1])
-        if lable[i] == labelbase[9]: #10 type
+        if label[i] == labelbase[9]: #10 type
             type10_x.append(group[i][0])
             type10_y.append(group[i][1])
-        if lable[i] == labelbase[10]: #11 type
+        if label[i] == labelbase[10]: #11 type
             type11_x.append(group[i][0])
             type11_y.append(group[i][1])
 
@@ -152,7 +197,68 @@ def classify(inX,dataset,labels,k):
     #排序
     sortedClassCount=sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)
     return sortedClassCount[0][0]
+'''
+算法评定
+'''
+def currentRate(labels , predictLabel):
+    num = len(labels)
+    currentNum = 0
+    for i in range(num):
+        if(labels[i] == predictLabel[i]):
+            currentNum = currentNum + 1
+        
+    return currentNum / num
+def countLabels(labels ,cata):
+    type_1,type_2,type_3,type_4,type_5,type_6,type_7,type_8,type_9,type_10,type_11 = 0
+    for i in range(len(labels)):
+        if( labels[i] == cata[0]):
+            type_1 = type_1 +1 
+        if( labels[i] == cata[1]):
+            type_2 = type_2 +1 
+        if( labels[i] == cata[2]):
+            type_3 = type_3 +1 
+        if( labels[i] == cata[3]):
+            type_4 = type_4 +1  
+        if( labels[i] == cata[4]):
+            type_5 = type_5 +1 
+        if( labels[i] == cata[5]):
+            type_6 = type_6 +1 
+        if( labels[i] == cata[6]):
+            type_7 = type_7 +1 
+        if( labels[i] == cata[7]):
+            type_8 = type_8 +1 
+        if( labels[i] == cata[8]):
+            type_9 = type_9 +1 
+        if( labels[i] == cata[9]):
+            type_10 = type_10 +1 
+        if( labels[i] == cata[10]):
+            type_11 = type_11 +1 
+    return  type_1,type_2,type_3,type_4,type_5,type_6,type_7,type_8,type_9,type_10,type_11
 
+def countTF(labels,predictLabels,cata,num):
+    FP , TP , FN ,TN = 0
+    for i in range(labels):
+        if(labels[i] == predictLabels[i] & labels[i] == cata):
+            TP = TP + 1
+        if(labels[i] != predictLabels[i] & labels[i] == cata):
+            FP = FP + 1
+        if(labels[i] != predictLabels[i] & labels[i] != cata):
+            FN = FN +1             
+        if(labels[i] == predictLabels[i] & labels[i] != cata):
+            TN = TN + 1        
+    precision = TP /(TP + FP)
+    recall = TP / (TP + FN)
+    specifity = TN / (TN + FP)
+    accuracy = (TN + TP) / (num)
+    return precision , recall , specifity , accuracy
+                
+def fMeasure(r,a):
+    f = (2 * r * a)/(r + a)   
+    return f             
+
+def f1Score(p,r):
+    f = (2* p * r )/(p+r)
+    return f       
 '''
 读取文件转换成矩阵
 '''    
@@ -169,7 +275,8 @@ def txt2data(filename):
         listFromLine = line.split(' ')
         returnMat[index,0] = listFromLine[0]
         returnMat[index,1] = listFromLine[1]
-        classLabelVector.append(int(listFromLine[-1]))
+ 
+        classLabelVector.append(int(listFromLine[-1])) #备用存储方案，用于绘图
         index += 1
     return returnMat , classLabelVector
 '''
@@ -190,15 +297,16 @@ def txt2cata(filename):
 主程序区域
 '''
 '''
-group,lable = createDataSet()
+group,label = createDataSet()
 print(len(group)) #len() and *.shape[0] , shape[0] is a easy way to measure matrix
-plotData(group, lable)
+plotData(group, label)
 print(group.sum(axis=1))
 '''
 
 returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
-
+#数据集初始化
+tS , tSL , trS , trSL = builtSet(returnmat, classLabelVector)
 plotData(returnmat,classLabelVector , labels)
 
         
