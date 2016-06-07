@@ -9,7 +9,7 @@ import operator
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import axis
 from numpy.linalg.linalg import solve
-
+from math import *
 '''
 类定义
 '''
@@ -182,12 +182,50 @@ def plotData(group,label,labelbase):
 '''
 K-NN
 '''
+'''
+wenti
+'''
+def calcDistance(Lat_A, Lng_A, Lat_B, Lng_B):
+    ra = 6378.140  # 赤道半径 (km)
+    rb = 6356.755  # 极半径 (km)
+    flatten = (ra - rb) / ra  # 地球扁率
+    rad_lat_A = radians(Lat_A)
+    rad_lng_A = radians(Lng_A)
+    rad_lat_B = radians(Lat_B)
+    rad_lng_B = radians(Lng_B)
+    pA = atan(rb / ra * tan(rad_lat_A))
+    pB = atan(rb / ra * tan(rad_lat_B))
+    xx = acos(sin(pA) * sin(pB) + cos(pA) * cos(pB) * cos(rad_lng_A - rad_lng_B))
+    if( xx != 0 ):
+        c1 = (sin(xx) - xx) * (sin(pA) + sin(pB)) ** 2 / cos(xx / 2) ** 2
+        c2 = (sin(xx) + xx) * (sin(pA) - sin(pB)) ** 2 / sin(xx / 2) ** 2
+        dr = flatten / 8 * (c1 - c2)
+        distance = ra * (xx + dr)
+    else:
+        distance = 0
+    return distance
 def classify(inX,dataSet,labels,k):
     dataSetSize = dataSet.shape[0]
     diffMat = tile(inX,(dataSetSize,1)) - dataSet #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
     sqDiffMat   =diffMat**2#各个元素分别平方
     sqDistances =sqDiffMat.sum(axis=1)#对应列相加，即得到了每一个距离的平方
     distances   =sqDistances**0.5#开方，得到距离。
+    sortedDistIndicies=distances.argsort()#升序排列
+    classCount={}
+    for i in range(k):
+        voteIlabel=labels[sortedDistIndicies[i]]
+        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
+    #排序
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    return sortedClassCount[0][0]
+
+'''
+wenti
+'''
+def classify_2(inX,dataSet,labels,k):
+    distances = zeros((len(dataSet) , 1)) 
+    for j in range(len(dataSet)):
+        distances[j] =  calcDistance(inX[0],inX[1],dataSet[j][0],dataSet[j][1])#距离
     sortedDistIndicies=distances.argsort()#升序排列
     classCount={}
     for i in range(k):
@@ -304,18 +342,22 @@ print(group.sum(axis=1))
 import samplingArchive 
 #2015-11(9:00-24:00) data input
 returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
-
+testmat , testclassLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\8buffer.txt')
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
 
 
 
 #数据集初始化
-trS , trSL , tS , tSL = builtSet(returnmat, classLabelVector)
+#trS , trSL , tS , tSL = builtSet(returnmat, classLabelVector)
 
 pTSL = []
-for i in range(len(tS)):
-    pTSL.append(classify(tS[i] ,trS , trSL , 11))
-    cR = currentRate(pTSL , tSL)
+#for i in range(len(tS)):
+#    pTSL.append(classify(tS[i] ,trS , trSL , 11))
+#    cR = currentRate(pTSL , tSL)
+#print(cR)
+for i in range(len(testmat)):
+    pTSL.append(classify_2(testmat[i] ,returnmat , classLabelVector , 11))
+    cR = currentRate(pTSL , testclassLabelVector)
 print(cR)
 #cT = countLabels(tSL, labels)
 #pCT = countLabels(pTSL, labels) 
