@@ -31,11 +31,11 @@ def createDataSet():
 '''
 def builtSet(group,labels):
     num = len(group)
-    trainSet = [] #train set 60%
+    trainSet = zeros((int(num * 0.6),2)) #train set 60%
     trainSetLabel = []
-    validationSet = [] #cross validation set 20%
+    validationSet = zeros(int(num * 0.2),2) #cross validation set 20%
     validationSetLabel = []
-    testSet = [] #test set 20%
+    testSet = zeros(num - int(0.6 * num) - int(0.2 * num),2) #test set 20%
     testSetLabel = []
     for i in range(num):
         if i < int(num * 0.6):
@@ -51,18 +51,20 @@ def builtSet(group,labels):
 #无建立集的数据集生成
 def builtSet(group,labels):
     num = len(group)
-    trainSet = [] #train set 60%
+    print(int(num * 0.7))
+    trainSet = zeros((int(num * 0.7),2)) #train set 70%
     trainSetLabel = []
-    validationSet = [] #cross validation set 20%
-    validationSetLabel = []
-    testSet = [] #test set 20%
+    print(int(num * 0.2))
+    testSet = zeros((num - int(num * 0.2),2)) #test set 30%
     testSetLabel = []
     for i in range(num):
         if i < int(num * 0.7):
-            trainSet.append(group[i,:])
+            trainSet[i,0] = group[i,0]
+            trainSet[i,1] = group[i,1]
             trainSetLabel.append(labels[i])
         else :
-            testSet.append(group[i,:])
+            testSet[i - int(num * 0.7),0] = group[i,0]
+            testSet[i - int(num * 0.7),1] = group[i,1]
             testSetLabel.append(labels[i])
     return trainSet, trainSetLabel, testSet , testSetLabel
             
@@ -97,6 +99,7 @@ def builtSet(group,labels):
 '''
 
 def plotData(group,label,labelbase):
+    plt.hold(True)
     plt.figure(figsize=(16, 9), dpi=180)
     axes = plt.subplot(111)
 
@@ -123,7 +126,7 @@ def plotData(group,label,labelbase):
     type10_y = []
     type11_x = []
     type11_y = []
-    print(len(group))
+
     for i in range(len(group)):
         
         if label[i] == labelbase[0]: #1 type
@@ -183,9 +186,9 @@ def plotData(group,label,labelbase):
 '''
 K-NN
 '''
-def classify(inX,dataset,labels,k):
+def classify(inX,dataSet,labels,k):
     dataSetSize = dataSet.shape[0]
-    diffmat = tile(inX,(dataSetSize,1)) - dataset #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
+    diffMat = tile(inX,(dataSetSize,1)) - dataSet #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
     sqDiffMat   =diffMat**2#各个元素分别平方
     sqDistances =sqDiffMat.sum(axis=1)#对应列相加，即得到了每一个距离的平方
     distances   =sqDistances**0.5#开方，得到距离。
@@ -195,7 +198,7 @@ def classify(inX,dataset,labels,k):
         voteIlabel=labels[sortedDistIndicies[i]]
         classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
     #排序
-    sortedClassCount=sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
     return sortedClassCount[0][0]
 '''
 算法评定
@@ -306,8 +309,15 @@ print(group.sum(axis=1))
 returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
 #数据集初始化
-tS , tSL , trS , trSL = builtSet(returnmat, classLabelVector)
+trS , trSL , tS , tSL = builtSet(returnmat, classLabelVector)
+pTSL = []
+for i in range(len(tS)):
+    pTSL.append(classify(tS[i] ,trS , trSL , 10))
+#cR = currentRate(pTSL , tSL)
+#cT = countLabels(tSL, labels)
+#pCT = countLabels(pTSL, labels) 
 plotData(returnmat,classLabelVector , labels)
+plotData(tS, pTSL, labels)
 
         
     
