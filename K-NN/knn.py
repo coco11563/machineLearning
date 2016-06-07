@@ -4,10 +4,11 @@ Created on 2016年6月1日
 
 @author: coco1
 '''
-from numpy import*
+from numpy import* 
 import operator
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import axis
+from numpy.linalg.linalg import solve
 
 '''
 类定义
@@ -29,46 +30,42 @@ def createDataSet():
 返回训练集、建立集、测试集
 以及其相对应的标示
 '''
-def builtSet(group,labels):
-    num = len(group)
-    trainSet = zeros((int(num * 0.6),2)) #train set 60%
-    trainSetLabel = []
-    validationSet = zeros(int(num * 0.2),2) #cross validation set 20%
-    validationSetLabel = []
-    testSet = zeros(num - int(0.6 * num) - int(0.2 * num),2) #test set 20%
-    testSetLabel = []
-    for i in range(num):
-        if i < int(num * 0.6):
-            trainSet.append(group[i,:])
-            trainSetLabel.append(labels[i])
-        if i > int(num * 0.6) & i < int(num * 0.8) :
-            validationSet.append(group[i,:])
-            validationSetLabel.append(labels[i])
-        else :
-            testSet.append(group[i,:])
-            testSetLabel.append(labels[i])
-    return trainSet, trainSetLabel, validationSet,validationSetLabel , testSet , testSetLabel
+def autoNorm(dataMat):
+    minVal = dataMat.min(0)
+    maxVal = dataMat.max(0)
+    ranges = maxVal - minVal
+    normDataSet = zeros(shape(dataMat))
+    m = dataMat.shape[0]
+    normDataSet = dataMat - tile(minVal , (m,1))
+    normDataSet = normDataSet / (tile(ranges , (m,1)))
+    print(normDataSet)
+    return normDataSet 
+    
+def unrepetitionRandomSampling(dataMat,number , labels):    #用以随机取样
+    sample = zeros((number ,2))
+    sampleLabels = []
+    other = dataMat
+    otherLabels = labels
+    for i in range(number):
+        randomnum =random.randint(0,len(other))
+        sample[i,0] = other[randomnum,0]
+        sample[i,1] = other[randomnum,1]
+        sampleLabels.append(labels[randomnum])
+        otherLabels = delete(otherLabels , randomnum )
+        other = delete(other , randomnum , 0)
+    return autoNorm(sample) ,sampleLabels, autoNorm(other),otherLabels
 #无建立集的数据集生成
 def builtSet(group,labels):
     num = len(group)
-    print(int(num * 0.7))
+  
     trainSet = zeros((int(num * 0.7),2)) #train set 70%
     trainSetLabel = []
-    print(int(num * 0.2))
+
     testSet = zeros((num - int(num * 0.2),2)) #test set 30%
     testSetLabel = []
-    for i in range(num):
-        if i < int(num * 0.7):
-            trainSet[i,0] = group[i,0]
-            trainSet[i,1] = group[i,1]
-            trainSetLabel.append(labels[i])
-        else :
-            testSet[i - int(num * 0.7),0] = group[i,0]
-            testSet[i - int(num * 0.7),1] = group[i,1]
-            testSetLabel.append(labels[i])
-    return trainSet, trainSetLabel, testSet , testSetLabel
-            
-        
+    trainSet,trainSetLabel, testSet,testSetLabel = unrepetitionRandomSampling(group ,int(num * 0.7) ,labels )
+    return trainSet,trainSetLabel, testSet,testSetLabel
+             
     
 
 '''
@@ -99,7 +96,6 @@ def builtSet(group,labels):
 '''
 
 def plotData(group,label,labelbase):
-    plt.hold(True)
     plt.figure(figsize=(16, 9), dpi=180)
     axes = plt.subplot(111)
 
@@ -278,7 +274,6 @@ def txt2data(filename):
         listFromLine = line.split(' ')
         returnMat[index,0] = listFromLine[0]
         returnMat[index,1] = listFromLine[1]
- 
         classLabelVector.append(int(listFromLine[-1])) #备用存储方案，用于绘图
         index += 1
     return returnMat , classLabelVector
@@ -296,6 +291,7 @@ def txt2cata(filename):
         labels.append(int(line))
         index += 1
     return labels
+
 '''
 主程序区域
 '''
@@ -305,19 +301,23 @@ print(len(group)) #len() and *.shape[0] , shape[0] is a easy way to measure matr
 plotData(group, label)
 print(group.sum(axis=1))
 '''
-
+import samplingArchive 
+#2015-11(9:00-24:00) data input
 returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
+
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
+
+
+
 #数据集初始化
 trS , trSL , tS , tSL = builtSet(returnmat, classLabelVector)
+
 pTSL = []
 for i in range(len(tS)):
-    pTSL.append(classify(tS[i] ,trS , trSL , 10))
-#cR = currentRate(pTSL , tSL)
+    pTSL.append(classify(tS[i] ,trS , trSL , 11))
+    cR = currentRate(pTSL , tSL)
+print(cR)
 #cT = countLabels(tSL, labels)
 #pCT = countLabels(pTSL, labels) 
-plotData(returnmat,classLabelVector , labels)
-plotData(tS, pTSL, labels)
-
-        
-    
+#plotData(returnmat,classLabelVector , labels)
+#plotData(tS,pTSL , labels)
