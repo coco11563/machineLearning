@@ -5,18 +5,40 @@ Created on 2016年6月1日
 @author: coco1
 '''
 from numpy import* 
+import distanceCacu as cacu
 import operator
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import axis
+from matplotlib.pyplot import axis, spectral
 from numpy.linalg.linalg import solve
 from math import *
+import time
+import sys
+
 '''
 类定义
 '''
 class point:
     x = []
     y = []
-        
+class ProgressBar:
+    def __init__(self, count = 0, total = 0, width = 50):
+        self.count = count
+        self.total = total
+        self.width = width
+    def move(self):
+        self.count += 1
+    def log(self, s):
+        sys.stdout.write('进度条：')
+        sys.stdout.write(' ' * (self.width + 9) + '\r')
+        sys.stdout.flush()
+        progress = int(self.width * self.count / self.total)
+        sys.stdout.write('{0:3}/{1:3}: '.format(self.count, self.total))
+        sys.stdout.write('#' * progress + '-' * int(self.width - progress) + '\r')
+        if progress == self.width:
+            sys.stdout.write('\n')
+        sys.stdout.flush()
+
+
 '''
 数据初始化
 '''
@@ -65,7 +87,8 @@ def builtSet(group,labels):
     testSetLabel = []
     trainSet,trainSetLabel, testSet,testSetLabel = unrepetitionRandomSampling(group ,int(num * 0.7) ,labels )
     return trainSet,trainSetLabel, testSet,testSetLabel
-             
+
+                
     
 
 '''
@@ -97,9 +120,7 @@ def builtSet(group,labels):
 
 def plotData(group,label,labelbase):
     plt.figure(figsize=(16, 9), dpi=180)
-    axes = plt.subplot(111)
-
-    
+    axes = plt.subplot(111) 
     type1_x = []
     type1_y = []
     type2_x = []
@@ -122,7 +143,7 @@ def plotData(group,label,labelbase):
     type10_y = []
     type11_x = []
     type11_y = []
-
+  
     for i in range(len(group)):
         
         if label[i] == labelbase[0]: #1 type
@@ -159,7 +180,7 @@ def plotData(group,label,labelbase):
             type11_x.append(group[i][0])
             type11_y.append(group[i][1])
 
-               
+    print(type10_x)          
     type1 = axes.scatter(type1_x, type1_y, s=20, c='red')
     type2 = axes.scatter(type2_x, type2_y, s=20, c='green')
     type3 = axes.scatter(type3_x, type3_y, s=20, c='black')
@@ -180,31 +201,63 @@ def plotData(group,label,labelbase):
     plt.show()
 
 '''
-K-NN
-'''
-'''
-wenti
+经纬度计算距离
 '''
 def calcDistance(Lat_A, Lng_A, Lat_B, Lng_B):
-    ra = 6378.140  # 赤道半径 (km)
-    rb = 6356.755  # 极半径 (km)
-    flatten = (ra - rb) / ra  # 地球扁率
-    rad_lat_A = radians(Lat_A)
-    rad_lng_A = radians(Lng_A)
-    rad_lat_B = radians(Lat_B)
-    rad_lng_B = radians(Lng_B)
-    pA = atan(rb / ra * tan(rad_lat_A))
-    pB = atan(rb / ra * tan(rad_lat_B))
-    xx = acos(sin(pA) * sin(pB) + cos(pA) * cos(pB) * cos(rad_lng_A - rad_lng_B))
-    if( xx != 0 ):
+    if(((float64(Lat_A - Lat_B)) == 0) & ((float64(Lng_A - Lng_B)) == 0)):#防止在统一点坐标
+        distance = 0.0
+    else:   
+        #start = time.clock() 
+        ra = 6378.140  # 赤道半径 (km)
+        rb = 6356.755  # 极半径 (km)
+        flatten = float64((ra - rb) / ra)  # 地球扁率
+        rad_lat_A = radians(Lat_A)
+        rad_lng_A = radians(Lng_A)
+        rad_lat_B = radians(Lat_B)
+        rad_lng_B = radians(Lng_B)
+        pA = atan(rb / ra * tan(rad_lat_A))
+        pB = atan(rb / ra * tan(rad_lat_B))
+        xx = float64(acos(sin(pA) * sin(pB)) )+ float64(cos(pA) * cos(pB) * cos(rad_lng_A - rad_lng_B))#防止因为数字过小而报错
         c1 = (sin(xx) - xx) * (sin(pA) + sin(pB)) ** 2 / cos(xx / 2) ** 2
         c2 = (sin(xx) + xx) * (sin(pA) - sin(pB)) ** 2 / sin(xx / 2) ** 2
         dr = flatten / 8 * (c1 - c2)
         distance = ra * (xx + dr)
-    else:
-        distance = 0
+        
+        #end = time.clock()
+        #print("The function run time is : %.03f seconds" %(end-start))
     return distance
+def getDistanceFromXtoY(lat_a, lng_a, lat_b, lng_b):
+    pk = 180 / 3.14169  
+    a1 = lat_a / pk  
+    a2 = lng_a / pk  
+    b1 = lat_b / pk  
+    b2 = lng_b / pk  
+    t1 = math.cos(a1) * math.cos(a2) * math.cos(b1) * math.cos(b2)  
+    t2 = math.cos(a1) * math.sin(a2) * math.cos(b1) * math.sin(b2)  
+    t3 = math.sin(a1) * math.sin(b1)  
+    t = t1 + t2 + t3
+    if t > 1:
+        t =1.0
+    tt = math.acos(t)  
+    return 6366000 * tt    
+def calcDistance_1(Lat_A, Lng_A, Lat_B, Lng_B):
+    if(((float64(Lat_A - Lat_B)) == 0) & ((float64(Lng_A - Lng_B)) == 0)):#防止在统一点坐标
+        distance = 0.0
+    else:   
+        p1 = cacu.Point()
+        p2 = cacu.Point()
+        p1.lat = Lat_A
+        p1.lng = Lng_A
+        p2.lat = Lat_B
+        p2.lng = Lat_B
+        distance = cacu.getDistance(p1, p2)
+    print(distance) 
+    return distance
+'''
+K-NN
+'''
 def classify(inX,dataSet,labels,k):
+    start = time.clock()
     dataSetSize = dataSet.shape[0]
     diffMat = tile(inX,(dataSetSize,1)) - dataSet #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
     sqDiffMat   =diffMat**2#各个元素分别平方
@@ -214,18 +267,21 @@ def classify(inX,dataSet,labels,k):
     classCount={}
     for i in range(k):
         voteIlabel=labels[sortedDistIndicies[i]]
-        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
+        classCount[voteIlabel]=classCount.get(voteIlabel,0) + 1
     #排序
     sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    end = time.clock()
+   # print("The function run time is : %.03f seconds" %(end-start))
+    
     return sortedClassCount[0][0]
 
-'''
-wenti
-'''
+
 def classify_2(inX,dataSet,labels,k):
+    start = time.clock()
     distances = zeros((len(dataSet) , 1)) 
     for j in range(len(dataSet)):
-        distances[j] =  calcDistance(inX[0],inX[1],dataSet[j][0],dataSet[j][1])#距离
+        distances[j] =  getDistanceFromXtoY(inX[0],inX[1],dataSet[j][0],dataSet[j][1])#距离
+    end = time.clock()
     sortedDistIndicies=distances.argsort()#升序排列
     classCount={}
     for i in range(k):
@@ -233,7 +289,28 @@ def classify_2(inX,dataSet,labels,k):
         classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
     #排序
     sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+   
+    print("The function run time is : %.03f seconds" %(end-start))
+    
     return sortedClassCount[0][0]
+
+def classify_3(inX,dataSet,labels,k):
+    start = time.clock()
+    distances = zeros((len(dataSet) , 1)) 
+    for j in range(len(dataSet)):
+        distances[j] =  cal_dis(inX[0],inX[1],dataSet[j][0],dataSet[j][1])#距离
+    sortedDistIndicies=distances.argsort()#升序排列
+    classCount={}
+    for i in range(k):
+        voteIlabel=labels[sortedDistIndicies[i]]
+        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
+    #排序
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    end = time.clock()
+    print("The function run time is : %.03f seconds" %(end-start))
+    
+    return sortedClassCount[0][0]
+
 '''
 算法评定
 '''
@@ -246,55 +323,61 @@ def currentRate(labels , predictLabel):
         
     return currentNum / num
 def countLabels(labels ,cata):
-    type_1,type_2,type_3,type_4,type_5,type_6,type_7,type_8,type_9,type_10,type_11 = 0
+    num = [0,0,0,0,0,0,0,0,0,0,0]
     for i in range(len(labels)):
-        if( labels[i] == cata[0]):
-            type_1 = type_1 +1 
-        if( labels[i] == cata[1]):
-            type_2 = type_2 +1 
-        if( labels[i] == cata[2]):
-            type_3 = type_3 +1 
-        if( labels[i] == cata[3]):
-            type_4 = type_4 +1  
-        if( labels[i] == cata[4]):
-            type_5 = type_5 +1 
-        if( labels[i] == cata[5]):
-            type_6 = type_6 +1 
-        if( labels[i] == cata[6]):
-            type_7 = type_7 +1 
-        if( labels[i] == cata[7]):
-            type_8 = type_8 +1 
-        if( labels[i] == cata[8]):
-            type_9 = type_9 +1 
-        if( labels[i] == cata[9]):
-            type_10 = type_10 +1 
-        if( labels[i] == cata[10]):
-            type_11 = type_11 +1 
-    return  type_1,type_2,type_3,type_4,type_5,type_6,type_7,type_8,type_9,type_10,type_11
+        if( int(labels[i]) == int(cata[0])):
+            num[0] = num[0] +1 
+        if( int(labels[i]) == int(cata[1])):
+            num[1] = num[1] +1 
+        if( int(labels[i]) == int(cata[2])):
+            num[2] = num[2] +1 
+        if( int(labels[i]) == int(cata[3])):
+            num[3] = num[3] +1  
+        if( int(labels[i]) == int(cata[4])):
+            num[4] = num[4] +1 
+        if( int(labels[i]) == int(cata[5])):
+            num[5] = num[5] +1 
+        if( int(labels[i]) == int(cata[6])):
+            num[6] = num[6] +1 
+        if( int(labels[i]) == int(cata[7])):
+            num[7] = num[7] +1 
+        if( int(labels[i]) == int(cata[8])):
+            num[8] = num[8] +1 
+        if( int(labels[i]) == int(cata[9])):
+            num[9] = num[9] +1  
+        if( int(labels[i]) == int(cata[10])):
+            num[10] = num[10] +1  
+    return num
 
-def countTF(labels,predictLabels,cata,num):
-    FP , TP , FN ,TN = 0
-    for i in range(labels):
-        if(labels[i] == predictLabels[i] & labels[i] == cata):
+def countTF(labels,predictLabels,cata,pnum,num):
+    FP = 0 
+    TP = 0  
+    FN = 0 
+    TN = 0
+    for i in range(len(labels)):
+        if(int(labels[i]) == int(predictLabels[i]) and int(labels[i]) == int(cata)):
             TP = TP + 1
-        if(labels[i] != predictLabels[i] & labels[i] == cata):
+        if(int(labels[i]) != int(predictLabels[i]) and int(labels[i]) == int(cata)):
             FP = FP + 1
-        if(labels[i] != predictLabels[i] & labels[i] != cata):
+        if(int(labels[i]) != int(predictLabels[i]) and int(labels[i] != cata)):
             FN = FN +1             
-        if(labels[i] == predictLabels[i] & labels[i] != cata):
+        if(int(labels[i]) == int(predictLabels[i]) and int(labels[i] != cata)):
             TN = TN + 1        
     precision = TP /(TP + FP)
     recall = TP / (TP + FN)
     specifity = TN / (TN + FP)
     accuracy = (TN + TP) / (num)
+    print('类别:' ,cata,'数量：',num,'precision:',precision , 'recall:' , recall , 'specifity' , specifity , 'accuracy' , accuracy)
     return precision , recall , specifity , accuracy
                 
 def fMeasure(r,a):
-    f = (2 * r * a)/(r + a)   
+    f = (2 * r * a)/(r + a) 
+    print('this type\'s f-Measure is' , f)  
     return f             
 
 def f1Score(p,r):
     f = (2* p * r )/(p+r)
+    print('this type\'s f-Measure is' , f)
     return f       
 '''
 读取文件转换成矩阵
@@ -304,15 +387,15 @@ def txt2data(filename):
     arrayLines = fr.readlines()
     numOfLines = len(arrayLines)
     classLabelVector = []
-    returnMat = zeros((numOfLines,2))
-    
+    returnMat = zeros((numOfLines,2),double)
+
     index = 0
     for line in arrayLines:
         line = line.strip()
         listFromLine = line.split(' ')
         returnMat[index,0] = listFromLine[0]
         returnMat[index,1] = listFromLine[1]
-        classLabelVector.append(int(listFromLine[-1])) #备用存储方案，用于绘图
+        classLabelVector.append(listFromLine[2]) #备用存储方案，用于绘图 numpy中的类无法做数组的游标
         index += 1
     return returnMat , classLabelVector
 '''
@@ -330,6 +413,12 @@ def txt2cata(filename):
         index += 1
     return labels
 
+def save2txt(filepath,mat , labels):
+    print(mat.shape[0] ,mat.shape[1])
+    print(labels.shape[0] , labels.shape[1])
+    savetxt(filepath + 'matSave',mat)
+    savetxt(filepath + 'labelsSave',labels)
+    
 '''
 主程序区域
 '''
@@ -341,25 +430,49 @@ print(group.sum(axis=1))
 '''
 import samplingArchive 
 #2015-11(9:00-24:00) data input
-returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
-testmat , testclassLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\8buffer.txt')
+testmat , testclassLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
+returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\8buffer.txt')
+#save2txt('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\', testmat, testclassLabelVector)
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
-
-
-
+#labelSave = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\labelsSave')
+#print(labelSave[0])
+# start = time.clock()
+# for i in range(50000):
+#     d = getDistanceFromXtoY(37.480563, 121.467113 , 37.480591  ,121.467926 )
+# end = time.clock()
+# print(end -start)
+# print(d)
+# pass
 #数据集初始化
 #trS , trSL , tS , tSL = builtSet(returnmat, classLabelVector)
-
+cT = countLabels(testclassLabelVector, labels)
+print(cT)
 pTSL = []
 #for i in range(len(tS)):
 #    pTSL.append(classify(tS[i] ,trS , trSL , 11))
 #    cR = currentRate(pTSL , tSL)
 #print(cR)
+bar = ProgressBar(total = 100)
+
+   
+num = len(testmat)
 for i in range(len(testmat)):
-    pTSL.append(classify_2(testmat[i] ,returnmat , classLabelVector , 11))
-    cR = currentRate(pTSL , testclassLabelVector)
-print(cR)
-#cT = countLabels(tSL, labels)
-#pCT = countLabels(pTSL, labels) 
-#plotData(returnmat,classLabelVector , labels)
-#plotData(tS,pTSL , labels)
+    #if(i == 0 or i == int(len(testmat)/10) or i == int(2*len(testmat)/10) or i == int(3*len(testmat)/10) or  i == int(4*len(testmat)/10) or  i == int(5*len(testmat)/10) or  i == int(6*len(testmat)/10) or  i == int(7*len(testmat)/10) or i == int(8*len(testmat)/10) or  i == int(9*len(testmat)/10) or  i == len(testmat)):
+    if(i%(int(len(testmat)/100))==0 or i ==0 or i == (len(testmat )-1)): 
+        bar.log('We have arrived at: ' + str(i + 1))
+        bar.move()
+    pTSL.append(classify(testmat[i] ,returnmat , classLabelVector , 11))
+    
+cR = currentRate(pTSL , testclassLabelVector)
+print('\n')
+print(cR) 
+cT = countLabels(testclassLabelVector, labels)
+pCT = countLabels(pTSL, labels) 
+f1score = []
+fm  = []
+for j in range(len(labels)):
+    p,r,s,a = countTF(testclassLabelVector,pTSL,labels[j] , pCT[j],cT[j])
+    fm.append( fMeasure(r,a))
+    f1score.append( f1Score(p,r))
+plotData(returnmat,classLabelVector , labels)
+plotData(testmat , pTSL , labels)
