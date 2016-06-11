@@ -146,41 +146,40 @@ def plotData(group,label,labelbase):
   
     for i in range(len(group)):
         
-        if label[i] == labelbase[0]: #1 type
+        if int(label[i]) == labelbase[0]: #1 type
             type1_x.append(group[i][0])
             type1_y.append(group[i][1])
-        if label[i] == labelbase[1]: #2 type
+        if int(label[i]) == labelbase[1]: #2 type
             type2_x.append(group[i][0])
             type2_y.append(group[i][1])
-        if label[i] == labelbase[2]: #3 type
+        if int(label[i]) == labelbase[2]: #3 type
             type3_x.append(group[i][0])
             type3_y.append(group[i][1])
-        if label[i] == labelbase[3]: #4 type
+        if int(label[i]) == labelbase[3]: #4 type
             type4_x.append(group[i][0])
             type4_y.append(group[i][1])
-        if label[i] == labelbase[4]: #5 type
+        if int(label[i]) == labelbase[4]: #5 type
             type5_x.append(group[i][0])
             type5_y.append(group[i][1])
-        if label[i] == labelbase[5]: #6 type
+        if int(label[i]) == labelbase[5]: #6 type
             type6_x.append(group[i][0])
             type6_y.append(group[i][1])
-        if label[i] == labelbase[6]: #7 type
+        if int(label[i]) == labelbase[6]: #7 type
             type7_x.append(group[i][0])
             type7_y.append(group[i][1])
-        if label[i] == labelbase[7]: #8 type
+        if int(label[i]) == labelbase[7]: #8 type
             type8_x.append(group[i][0])
             type8_y.append(group[i][1])
-        if label[i] == labelbase[8]: #9 type
+        if int(label[i]) == labelbase[8]: #9 type
             type9_x.append(group[i][0])
             type9_y.append(group[i][1])
-        if label[i] == labelbase[9]: #10 type
+        if int(label[i]) == labelbase[9]: #10 type
             type10_x.append(group[i][0])
             type10_y.append(group[i][1])
-        if label[i] == labelbase[10]: #11 type
+        if int(label[i]) == labelbase[10]: #11 type
             type11_x.append(group[i][0])
             type11_y.append(group[i][1])
-
-    print(type10_x)          
+         
     type1 = axes.scatter(type1_x, type1_y, s=20, c='red')
     type2 = axes.scatter(type2_x, type2_y, s=20, c='green')
     type3 = axes.scatter(type3_x, type3_y, s=20, c='black')
@@ -350,24 +349,25 @@ def countLabels(labels ,cata):
     return num
 
 def countTF(labels,predictLabels,cata,pnum,num):
-    FP = 0 
-    TP = 0  
-    FN = 0 
-    TN = 0
+    FP = 0 #false positive
+    TP = 0 #true positive
+    FN = 0 #false negative
+    TN = 0 #true negative
     for i in range(len(labels)):
         if(int(labels[i]) == int(predictLabels[i]) and int(labels[i]) == int(cata)):
             TP = TP + 1
         if(int(labels[i]) != int(predictLabels[i]) and int(labels[i]) == int(cata)):
-            FP = FP + 1
-        if(int(labels[i]) != int(predictLabels[i]) and int(labels[i] != cata)):
-            FN = FN +1             
+            FN = FN + 1
         if(int(labels[i]) == int(predictLabels[i]) and int(labels[i] != cata)):
-            TN = TN + 1        
-    precision = TP /(TP + FP)
-    recall = TP / (TP + FN)
-    specifity = TN / (TN + FP)
-    accuracy = (TN + TP) / (num)
-    print('类别:' ,cata,'数量：',num,'precision:',precision , 'recall:' , recall , 'specifity' , specifity , 'accuracy' , accuracy)
+            FP = FP +1             
+        if(int(labels[i]) != int(predictLabels[i]) and int(labels[i] != cata)):
+            TN = TN + 1      
+      
+    precision = TP /(TP + FP)            #精确度：判定正例中真正正例的比重
+    recall = TP / (TP + FN)              #召回率：判定正确的正例占总的正例的比重
+    specifity = TN / (TN + FP)           #转移度：反映对0量的判定能力
+    accuracy = (TN + TP) / (len(labels)) #准确度：反映分类器对整个样本的判断能力
+    print('类别:' ,cata,'数量：',num,'precision:',precision , 'recall:' , recall , 'specifity:' , specifity , 'accuracy:' , accuracy)
     return precision , recall , specifity , accuracy
                 
 def fMeasure(r,a):
@@ -377,7 +377,7 @@ def fMeasure(r,a):
 
 def f1Score(p,r):
     f = (2* p * r )/(p+r)
-    print('this type\'s f-Measure is' , f)
+    print('this type\'s f-1Score is' , f)
     return f       
 '''
 读取文件转换成矩阵
@@ -434,6 +434,9 @@ testmat , testclassLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLea
 returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\8buffer.txt')
 #save2txt('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\', testmat, testclassLabelVector)
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
+print('正在初始化参数...')
+time.sleep(1)
+print('矩阵初始化完成！')
 #labelSave = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\labelsSave')
 #print(labelSave[0])
 # start = time.clock()
@@ -445,34 +448,64 @@ labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.tx
 # pass
 #数据集初始化
 #trS , trSL , tS , tSL = builtSet(returnmat, classLabelVector)
-cT = countLabels(testclassLabelVector, labels)
-print(cT)
+
 pTSL = []
 #for i in range(len(tS)):
 #    pTSL.append(classify(tS[i] ,trS , trSL , 11))
 #    cR = currentRate(pTSL , tSL)
 #print(cR)
+
+
 bar = ProgressBar(total = 100)
+bar_2 = ProgressBar(total=3)
+bar_3 = ProgressBar(total=3)
+print('----------三秒后展示原坐标点图----------')
+bar_2.log(' ')
+bar_2.move()
+time.sleep(1)
+bar_2.log(' ')
+bar_2.move()
+time.sleep(1)
+bar_2.log(' ')
+bar_2.move()
+time.sleep(1)
+bar_2.log(' ')
+bar_2.move()
+plotData(returnmat,classLabelVector , labels)
+print('原坐标图展示完成！')
 
    
 num = len(testmat)
+print('----------K-NN计算进展情况----------')
 for i in range(len(testmat)):
     #if(i == 0 or i == int(len(testmat)/10) or i == int(2*len(testmat)/10) or i == int(3*len(testmat)/10) or  i == int(4*len(testmat)/10) or  i == int(5*len(testmat)/10) or  i == int(6*len(testmat)/10) or  i == int(7*len(testmat)/10) or i == int(8*len(testmat)/10) or  i == int(9*len(testmat)/10) or  i == len(testmat)):
-    if(i%(int(len(testmat)/100))==0 or i ==0 or i == (len(testmat )-1)): 
+    if(i%(int(len(testmat)/100))==0): 
         bar.log('We have arrived at: ' + str(i + 1))
         bar.move()
     pTSL.append(classify(testmat[i] ,returnmat , classLabelVector , 11))
     
 cR = currentRate(pTSL , testclassLabelVector)
 print('\n')
-print(cR) 
+print('本次预测准确度为:',cR) 
 cT = countLabels(testclassLabelVector, labels)
 pCT = countLabels(pTSL, labels) 
 f1score = []
 fm  = []
 for j in range(len(labels)):
     p,r,s,a = countTF(testclassLabelVector,pTSL,labels[j] , pCT[j],cT[j])
-    fm.append( fMeasure(r,a))
-    f1score.append( f1Score(p,r))
-plotData(returnmat,classLabelVector , labels)
+    fm.append(fMeasure(r,a))
+    f1score.append(f1Score(p,r))
+print('----------三秒后展示预测坐标点图----------')
+bar_3.log(' ')
+bar_3.move()
+time.sleep(1)
+bar_3.log(' ')
+bar_3.move()
+time.sleep(1)
+bar_3.log(' ')
+bar_3.move()
+time.sleep(1)
+bar_3.log(' ')
+bar_3.move()
 plotData(testmat , pTSL , labels)
+print('预测图展示完成！')
