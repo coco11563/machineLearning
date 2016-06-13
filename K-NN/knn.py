@@ -14,6 +14,8 @@ from math import *
 import time
 import sys
 
+import thread 
+
 '''
 类定义
 '''
@@ -33,7 +35,7 @@ class ProgressBar:
         sys.stdout.flush()
         progress = int(self.width * self.count / self.total)
         sys.stdout.write('{0:3}/{1:3}: '.format(self.count, self.total))
-        sys.stdout.write('#' * progress + '-' * int(self.width - progress) + '\r')
+        sys.stdout.write('=' * progress + '-' * int(self.width - progress) + '\r')
         if progress == self.width:
             sys.stdout.write('\n')
         sys.stdout.flush()
@@ -52,7 +54,7 @@ def createDataSet():
 返回训练集、建立集、测试集
 以及其相对应的标示
 '''
-def autoNorm(dataMat):
+def autoNorm(dataMat): #任意矩阵归一化
     minVal = dataMat.min(0)
     maxVal = dataMat.max(0)
     ranges = maxVal - minVal
@@ -60,7 +62,7 @@ def autoNorm(dataMat):
     m = dataMat.shape[0]
     normDataSet = dataMat - tile(minVal , (m,1))
     normDataSet = normDataSet / (tile(ranges , (m,1)))
-    print(normDataSet)
+#    print(normDataSet)
     return normDataSet 
     
 def unrepetitionRandomSampling(dataMat,number , labels):    #用以随机取样
@@ -367,7 +369,7 @@ def countTF(labels,predictLabels,cata,pnum,num):
     recall = TP / (TP + FN)              #召回率：判定正确的正例占总的正例的比重
     specifity = TN / (TN + FP)           #转移度：反映对0量的判定能力
     accuracy = (TN + TP) / (len(labels)) #准确度：反映分类器对整个样本的判断能力
-    print('类别:' ,cata,'数量：',num,'precision:',precision , 'recall:' , recall , 'specifity:' , specifity , 'accuracy:' , accuracy)
+    print('类别:' ,cata,'数量：',num,'precision(精确度：判定正例中真正正例的比重):',precision , 'recall(召回率：判定正确的正例占总的正例的比重):' , recall , 'specifity(转移度：反映对0量的判定能力):' , specifity , 'accuracy:(准确度：反映分类器对整个样本的判断能力)' , accuracy)
     return precision , recall , specifity , accuracy
                 
 def fMeasure(r,a):
@@ -429,12 +431,14 @@ plotData(group, label)
 print(group.sum(axis=1))
 '''
 import samplingArchive 
+print('正在初始化参数...')
 #2015-11(9:00-24:00) data input
 testmat , testclassLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\buffer.txt')
+#testmat = autoNorm(testmat) 使用norm后正确率22%
 returnmat , classLabelVector = txt2data('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\8buffer.txt')
+#returnmat = autoNorm(returnmat)
 #save2txt('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\', testmat, testclassLabelVector)
 labels = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\category.txt')
-print('正在初始化参数...')
 time.sleep(1)
 print('矩阵初始化完成！')
 #labelSave = txt2cata('D:\\FILE\\PythonWorkspace\\machineLearning\\data\\labelsSave')
