@@ -14,7 +14,7 @@ from math import *
 import time
 import sys
 
-import thread 
+
 
 '''
 类定义
@@ -35,7 +35,7 @@ class ProgressBar:
         sys.stdout.flush()
         progress = int(self.width * self.count / self.total)
         sys.stdout.write('{0:3}/{1:3}: '.format(self.count, self.total))
-        sys.stdout.write('=' * progress + '-' * int(self.width - progress) + '\r')
+        sys.stdout.write('O' * progress + 'o' * int(self.width - progress) + '\r')
         if progress == self.width:
             sys.stdout.write('\n')
         sys.stdout.flush()
@@ -91,8 +91,14 @@ def builtSet(group,labels):
     return trainSet,trainSetLabel, testSet,testSetLabel
 
                 
+def barProcess(times , num ):   
+    bar = ProgressBar(total = num)
+    for i in range(num):
+        bar.move()
+        bar.log(' ')
+        time.sleep(times)
+        
     
-
 '''
 点状图展示
     axes1.legend((type1), (u'19'), loc=2)
@@ -199,6 +205,34 @@ def plotData(group,label,labelbase):
     axes.legend((type1, type2 ,type3 ,type4 ,type5 ,type6 ,type7,type8 ,type9 ,type10 , type11), (u'19', u'44',u'51',u'64' ,u'115' ,u'169' ,u'194' ,u'258' ,u'260' , u'500' , u'601'), loc=2)
 
     
+    plt.show()
+def plotData_2(group,label):
+    plt.figure(figsize=(16, 9), dpi=180)
+    axes = plt.subplot(111) 
+    type1_x = []
+    type1_y = []
+    type2_x = []
+    type2_y = []
+  
+    for i in range(len(group)):
+        
+        if int(label[i]) == 0: #1 type
+            type1_x.append(group[i][0])
+            type1_y.append(group[i][1])
+        if int(label[i]) == 1: #2 type
+            type2_x.append(group[i][0])
+            type2_y.append(group[i][1])
+       
+         
+    type1 = axes.scatter(type1_x, type1_y, s=20, c='red')
+    type2 = axes.scatter(type2_x, type2_y, s=20, c='cyan')
+    
+    
+    plt.xlabel(u'lat')
+    plt.ylabel(u'long')
+    axes.legend((type1, type2), (u'wrong', u'right'), loc=2)
+
+   
     plt.show()
 
 '''
@@ -317,12 +351,17 @@ def classify_3(inX,dataSet,labels,k):
 '''
 def currentRate(labels , predictLabel):
     num = len(labels)
+    pTStatus = []
     currentNum = 0
     for i in range(num):
         if(labels[i] == predictLabel[i]):
             currentNum = currentNum + 1
+            pTStatus.append(1)
+        else:
+            pTStatus.append(0)
+    
         
-    return currentNum / num
+    return currentNum / num,pTStatus
 def countLabels(labels ,cata):
     num = [0,0,0,0,0,0,0,0,0,0,0]
     for i in range(len(labels)):
@@ -461,20 +500,9 @@ pTSL = []
 
 
 bar = ProgressBar(total = 100)
-bar_2 = ProgressBar(total=3)
-bar_3 = ProgressBar(total=3)
+
 print('----------三秒后展示原坐标点图----------')
-bar_2.log(' ')
-bar_2.move()
-time.sleep(1)
-bar_2.log(' ')
-bar_2.move()
-time.sleep(1)
-bar_2.log(' ')
-bar_2.move()
-time.sleep(1)
-bar_2.log(' ')
-bar_2.move()
+barProcess(1,3)
 plotData(returnmat,classLabelVector , labels)
 print('原坐标图展示完成！')
 
@@ -488,7 +516,7 @@ for i in range(len(testmat)):
         bar.move()
     pTSL.append(classify(testmat[i] ,returnmat , classLabelVector , 11))
     
-cR = currentRate(pTSL , testclassLabelVector)
+cR,pStatus  = currentRate(pTSL , testclassLabelVector)
 print('\n')
 print('本次预测准确度为:',cR) 
 cT = countLabels(testclassLabelVector, labels)
@@ -500,16 +528,10 @@ for j in range(len(labels)):
     fm.append(fMeasure(r,a))
     f1score.append(f1Score(p,r))
 print('----------三秒后展示预测坐标点图----------')
-bar_3.log(' ')
-bar_3.move()
-time.sleep(1)
-bar_3.log(' ')
-bar_3.move()
-time.sleep(1)
-bar_3.log(' ')
-bar_3.move()
-time.sleep(1)
-bar_3.log(' ')
-bar_3.move()
+barProcess(1,3)
 plotData(testmat , pTSL , labels)
 print('预测图展示完成！')
+print('----------三秒后展示预测情况图----------')
+barProcess(1,3)
+plotData_2(testmat , pStatus)
+print('情况图展示完成！')
