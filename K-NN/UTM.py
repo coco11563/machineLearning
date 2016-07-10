@@ -1,6 +1,5 @@
 '''
 Created on 2016年6月6日
-
 @author: coco1
 '''
 import math
