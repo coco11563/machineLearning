@@ -10,7 +10,8 @@ from numpy.linalg.linalg import solve
 from math import *
 import time
 import sys
-
+from buildSet import *
+from buildSet import autoNorm
 
 
 
@@ -88,12 +89,61 @@ def classify(inX,dataSet,labels,k):
         voteIlabel=labels[sortedDistIndicies[i]]
         classCount[voteIlabel]=classCount.get(voteIlabel,0) + 1
     #排序
+    print(classCount)
     sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
     end = time.clock()
    # print("The function run time is : %.03f seconds" %(end-start))
     
     return sortedClassCount[0][0]
 
+def classifyByPoi(inX,dataSet,labels,num,k):#{num,dis}
+    decision = zeros((k,2),double)
+    dataSetSize = dataSet.shape[0]
+    diffMat = tile(inX,(dataSetSize,1)) - dataSet #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
+    sqDiffMat   =diffMat**2#各个元素分别平方
+    sqDistances =sqDiffMat.sum(axis=1)#对应列相加，即得到了每一个距离的平方
+    distances   =sqDistances**0.5#开方，得到距离。
+    sortedDistIndicies=distances.argsort()#升序排列
+    
+    classCount={}
+    voteIlabel = []
+    for i in range(k):
+        voteIlabel.append(labels[sortedDistIndicies[i]])
+        checkinNum = num[sortedDistIndicies[i]]
+        dis = distances[sortedDistIndicies[i]]
+        decision[i,0] = checkinNum
+        decision[i,1] = dis
+        
+        #classCount[voteIlabel]=classCount.get(voteIlabel,0) + 1
+        #sum([[0, 1], [0, 5]], axis=1)    #axis=1 是按行求和
+    decision = autoNorm(decision)
+    decision = decision* [0.7,0.3] #[修改这部分更改权重]
+    decisionMatrix = decision.sum(axis = 1)
+    decisionIndicies = decisionMatrix.argsort()     
+    #排序
+
+   # print("The function run time is : %.03f seconds" %(end-start))
+    return voteIlabel[decisionIndicies[1]]
+def classifyByPoi_1(inX,dataSet,labels,num,k):
+    dataSetSize = dataSet.shape[0]
+    diffMat = tile(inX,(dataSetSize,1)) - dataSet #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
+    sqDiffMat   =diffMat**2#各个元素分别平方
+    sqDistances =sqDiffMat.sum(axis=1)#对应列相加，即得到了每一个距离的平方
+    distances   =sqDistances**0.5#开方，得到距离。
+    sortedDistIndicies=distances.argsort()#升序排列
+    classCount={}
+    for i in range(k):
+        voteIlabel=labels[sortedDistIndicies[i]]
+        checkinNum = num[sortedDistIndicies[i]]
+        dis = distances[sortedDistIndicies[i]]
+        #classCount[voteIlabel]=classCount.get(voteIlabel,0) + 1
+        classCount[voteIlabel]=classCount.get(voteIlabel,0) + int(checkinNum)
+    print(classCount)   
+    #排序
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+   # print("The function run time is : %.03f seconds" %(end-start))
+    
+    return sortedClassCount[0][0]
 
 def classify_2(inX,dataSet,labels,k):
     start = time.clock()

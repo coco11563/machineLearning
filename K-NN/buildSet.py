@@ -7,6 +7,7 @@ Created on 2016年7月9日
 '''
 数据初始化
 '''
+from numpy import *
 def createDataSet():
     group = array([[1.0,1.1],[1.0,1.0],[0,0],[0,0.1]])
     label = ['A','A','B','B']
