@@ -12,6 +12,7 @@ import time
 import sys
 from buildSet import *
 from buildSet import autoNorm
+from numpy.core.fromnumeric import shape
 
 
 
@@ -98,13 +99,14 @@ def classify(inX,dataSet,labels,k):
 
 def classifyByPoi(inX,dataSet,labels,num,k):#{num,dis}
     decision = zeros((k,2),double)
+    correctmatrix = zeros((k,2),double)
     dataSetSize = dataSet.shape[0]
     diffMat = tile(inX,(dataSetSize,1)) - dataSet #tile:numpy中的函数。tile将原来的一个数组，扩充成了4个一样的数组。diffMat得到了目标与训练数值之间的差值。
     sqDiffMat   =diffMat**2#各个元素分别平方
     sqDistances =sqDiffMat.sum(axis=1)#对应列相加，即得到了每一个距离的平方
     distances   =sqDistances**0.5#开方，得到距离。
     sortedDistIndicies=distances.argsort()#升序排列
-    
+    correctmatrix[:,1] = 1
     classCount={}
     voteIlabel = []
     for i in range(k):
@@ -112,14 +114,18 @@ def classifyByPoi(inX,dataSet,labels,num,k):#{num,dis}
         checkinNum = num[sortedDistIndicies[i]]
         dis = distances[sortedDistIndicies[i]]
         decision[i,0] = checkinNum
-        decision[i,1] = dis
-        
+        decision[i,1] = dis  
+        print(checkinNum)
+        print(dis) 
         #classCount[voteIlabel]=classCount.get(voteIlabel,0) + 1
         #sum([[0, 1], [0, 5]], axis=1)    #axis=1 是按行求和
     decision = autoNorm(decision)
-    decision = decision* [0.7,0.3] #[修改这部分更改权重]
-    decisionMatrix = decision.sum(axis = 1)
-    decisionIndicies = decisionMatrix.argsort()     
+    decision = decision - correctmatrix
+    
+    decision = dot(decision,[[1,0],[0,-1]]) #这里修复了距离越大反而权值越高的问题
+    decision = dot(decision, [0.7,0.3]) #[修改这部分更改权重]
+    decisionIndicies = decision.argsort()     
+
     #排序
 
    # print("The function run time is : %.03f seconds" %(end-start))

@@ -39,10 +39,14 @@ if __name__ == '__main__':
 #     print('原坐标图展示完成！')
     num = len(testmat)
 #     print('----------K-NN计算进展情况----------')
-    
+    k = 0; #可以正确显示目前的处理进度了
     for i in range(len(testmat)):
+        
         if (i % int(len(testmat)/100)  == 0):
-            print('done 1%')
+            print('done ')
+            print(k)
+            print('%')
+            k = k+1
 #         if(i%(int(len(testmat)/100))==0): 
 #             bar.log('We have arrived at: ' + str(i + 1))
 #             bar.move()

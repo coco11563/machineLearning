@@ -28,6 +28,9 @@ def autoNorm(dataMat): #任意矩阵归一化
     normDataSet = normDataSet / (tile(ranges , (m,1)))
 #    print(normDataSet)
     return normDataSet 
+
+def sigmoid(inX):
+    return 1.0/(1+exp(-inX))
     
 def unrepetitionRandomSampling(dataMat,number , labels):    #用以随机取样
     sample = zeros((number ,2))
@@ -53,3 +56,7 @@ def builtSet(group,labels):
     testSetLabel = []
     trainSet,trainSetLabel, testSet,testSetLabel = unrepetitionRandomSampling(group ,int(num * 0.7) ,labels )
     return trainSet,trainSetLabel, testSet,testSetLabel
+
+datamat = mat([[100,2],[300,1],[400,3]])
+datamat = autoNorm(datamat)
+print(datamat)
